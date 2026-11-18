@@ -4,7 +4,7 @@ Pick a bus route and stop, set a schedule (e.g. Mon–Fri 07:00–09:00, every 2
 notifications with an estimated arrival ("3 stops away, ~4 min"). Works on Android (Chrome) and iPhone
 (Safari 16.4+, after "Add to Home Screen"). No accounts, no personal data stored.
 
-Built with **Spring Boot 4 / Java 21**, vanilla JS PWA frontend, PostgreSQL.
+Built with **Spring Boot 4 / Java 21** backend, **React + Vite + TypeScript + shadcn/ui** frontend, PostgreSQL.
 
 > **Heads-up:** ETAs are *estimates*. Malaysia's open API only publishes bus **vehicle positions**
 > (GTFS Realtime, refreshed every ~30 s); there is no official ETA feed yet and no live feed for LRT/MRT.
@@ -21,8 +21,10 @@ Built with **Spring Boot 4 / Java 21**, vanilla JS PWA frontend, PostgreSQL.
    every 30 s ───────────┘  AlertScheduler  who is "on" right now? → PushService (VAPID Web Push)
 ```
 
-* **Static data:** `api.data.gov.my/gtfs-static/prasarana` (feeds `rapid-bus-mrtfeeder`, `rapid-bus-kl`), cached per day.
-* **Realtime data:** `api.data.gov.my/gtfs-realtime/vehicle-position/prasarana`, protobuf, cached ~25 s.
+* **Static data:** all 14 `api.data.gov.my` GTFS feeds — Prasarana (`rapid-bus-kl`, `rapid-bus-mrtfeeder`,
+  `rapid-bus-penang`, `rapid-rail-kl`) and BAS.MY (9 cities) — cached per day.
+* **Realtime data:** `api.data.gov.my/gtfs-realtime/vehicle-position/…`, protobuf, cached ~25 s. `rapid-rail-kl`
+  has no realtime feed (static schedule only).
 * **Push:** Web Push with a VAPID key pair generated on first start (`data/vapid.properties`, **back it up, never regenerate**).
 * **Public-facing safeguards:** per-IP rate limits, caps on total/per-IP subscriptions, max 4 h window, push endpoint
   allow-list (FCM, Apple, Mozilla, Windows) to prevent SSRF, random unsubscribe token per subscription.
@@ -30,12 +32,17 @@ Built with **Spring Boot 4 / Java 21**, vanilla JS PWA frontend, PostgreSQL.
 ## Run locally
 
 ```bash
-# needs JDK 21 + Maven + Docker   (macOS: brew install openjdk@21 maven)
-docker compose up -d   # local PostgreSQL (db/user/password: ligan_bas)
-mvn test               # unit tests for the ETA logic (no database needed)
+# needs JDK 21 + Maven + Docker + Node 20+   (macOS: brew install openjdk@21 maven node)
+docker compose up -d                  # local PostgreSQL (db/user/password: ligan_bas)
+mvn test                              # unit tests for the ETA logic (no database needed)
+cd frontend && npm install && npm run build && cd ..   # builds into src/main/resources/static
 mvn spring-boot:run
 # open http://localhost:8080
 ```
+
+For frontend-only iteration, `cd frontend && npm run dev` serves on its own port with `/api` proxied to `:8080`,
+but **Web Push testing needs the production build** served from `:8080` directly — the service worker (`sw.js`)
+must be at the same origin/scope as the API.
 
 Web Push needs HTTPS, except on `localhost` (so local testing works in Chrome). iPhone requires the installed
 Home-Screen app over real HTTPS, so test iOS on the VPS.
@@ -45,6 +52,7 @@ The first start downloads the static GTFS (can take a minute). `/api/health` sho
 ## Deploy on a VPS
 
 ```bash
+cd frontend && npm install && npm run build && cd ..   # must run before package — static/ isn't committed
 mvn -DskipTests package
 scp target/ligan-bas-0.1.0.jar you@vps:/opt/busalert/
 ```
@@ -102,6 +110,8 @@ Memory note: the `rapid-bus-kl` static feed is large. If the VPS is small, give 
 | GET | `/api/routes` | `[{key, code, label}]` |
 | GET | `/api/stops?route=KEY` | `[{id, name}]` |
 | GET | `/api/eta?route=KEY&stop=ID` | `{etas:[{vehicle, stops_away, km, minutes}], note}` (30 req/min/IP) |
+| GET | `/api/schedule?route=KEY&stop=ID&day=0-6` | `{day, times, note}` — static GTFS schedule, `day` defaults to today |
+| GET | `/api/stops/search?q=name` | `[{id, name, routes:[{key, code, label}]}]` — find a stop by name across all providers |
 | POST | `/api/subscriptions` | body: `subscription, route, stop_id, days[0=Mon..6], start, end, interval_min(1/2/5/10)` → `{id, token}` |
 | DELETE | `/api/subscriptions/{id}?token=…` | unsubscribe |
 
