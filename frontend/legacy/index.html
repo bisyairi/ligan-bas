@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Bus Alert – Rapid KL</title>
+  <meta name="theme-color" content="#0f766e">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Bus Alert">
+  <style>
+    :root { --bg:#f6f7f9; --card:#fff; --ink:#111827; --mute:#6b7280; --line:#e5e7eb; --brand:#0f766e; --warn:#b45309; --bad:#b91c1c; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg:#0b0f14; --card:#141a22; --ink:#e5e7eb; --mute:#9ca3af; --line:#243041; --brand:#2dd4bf; --warn:#fbbf24; --bad:#f87171; }
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+           padding:env(safe-area-inset-top) 16px 40px; }
+    main { max-width: 560px; margin: 0 auto; }
+    h1 { font-size: 1.5rem; margin: 24px 0 4px; }
+    p.sub { color: var(--mute); margin: 0 0 16px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; margin:14px 0; }
+    h2 { font-size: 1rem; margin: 0 0 12px; }
+    label { display:block; font-size:.85rem; color:var(--mute); margin:10px 0 4px; }
+    select, input[type=text], input[type=time] { width:100%; font:inherit; padding:10px; border-radius:10px;
+           border:1px solid var(--line); background:var(--bg); color:var(--ink); }
+    .row { display:flex; gap:10px; } .row > * { flex:1; }
+    .days { display:flex; flex-wrap:wrap; gap:6px; }
+    .days label { display:flex; align-items:center; gap:4px; margin:0; padding:6px 10px; border:1px solid var(--line);
+           border-radius:999px; color:var(--ink); font-size:.9rem; }
+    button { font:inherit; font-weight:600; padding:11px 16px; border-radius:10px; border:0; cursor:pointer;
+           background:var(--brand); color:#fff; width:100%; margin-top:14px; }
+    @media (prefers-color-scheme: dark) { button { color:#04211e; } }
+    button.ghost { background:transparent; color:var(--brand); border:1px solid var(--line); }
+    button.small { width:auto; margin:0; padding:6px 12px; font-size:.85rem; }
+    button:disabled { opacity:.5; cursor:not-allowed; }
+    .eta { padding:8px 0; border-top:1px solid var(--line); } .eta:first-child { border-top:0; }
+    .eta b { font-size:1.15rem; }
+    .msg { margin-top:10px; font-size:.9rem; } .warn { color:var(--warn); } .bad { color:var(--bad); } .ok { color:var(--brand); }
+    .mine { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:8px 0; border-top:1px solid var(--line); }
+    .mine:first-of-type { border-top:0; } .mine small { color:var(--mute); display:block; }
+    footer { color:var(--mute); font-size:.8rem; margin-top:24px; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>🚌 Bus Alert</h1>
+  <p class="sub">Pilih bas &amp; stop, dapat notifikasi anggaran bas sampai pada waktu yang kau tetapkan. Rapid KL &amp; MRT feeder.</p>
+
+  <div id="installHint" class="card warn" hidden>
+    <b>iPhone:</b> tekan butang Share → <b>Add to Home Screen</b>, buka dari ikon tu, baru boleh aktifkan notifikasi (iOS 16.4+).
+  </div>
+
+  <section class="card">
+    <h2>1. Pilih bas &amp; stop</h2>
+    <label for="routeSearch">Cari route (cth T811)</label>
+    <input id="routeSearch" type="text" placeholder="Taip untuk tapis…" autocomplete="off">
+    <label for="route">Route</label>
+    <select id="route" size="1"><option>Memuatkan…</option></select>
+    <label for="stopSearch">Cari stop</label>
+    <input id="stopSearch" type="text" placeholder="Taip nama stop…" autocomplete="off">
+    <label for="stop">Stop</label>
+    <select id="stop" disabled></select>
+    <button id="btnEta" class="ghost" disabled>Semak ETA sekarang</button>
+    <div id="etaOut" class="msg"></div>
+  </section>
+
+  <section class="card">
+    <h2>2. Jadual notifikasi</h2>
+    <label>Hari</label>
+    <div class="days" id="days"></div>
+    <div class="row">
+      <div><label for="start">Dari</label><input id="start" type="time" value="07:00"></div>
+      <div><label for="end">Hingga</label><input id="end" type="time" value="09:00"></div>
+    </div>
+    <label for="interval">Setiap</label>
+    <select id="interval">
+      <option value="1">1 minit</option><option value="2">2 minit</option>
+      <option value="5">5 minit</option><option value="10">10 minit</option>
+    </select>
+    <button id="btnSub" disabled>Aktifkan notifikasi</button>
+    <div id="subOut" class="msg"></div>
+  </section>
+
+  <section class="card" id="mineCard" hidden>
+    <h2>Subscription aku (peranti ni)</h2>
+    <div id="mine"></div>
+  </section>
+
+  <footer>
+    ETA dikira dari posisi GPS bas (data.gov.my GTFS Realtime) dan kelajuan purata, jadi ia <b>anggaran</b>, bukan ETA rasmi.
+    Data live dikemas kini setiap ~30 saat. Tiada akaun atau data peribadi disimpan.
+  </footer>
+</main>
+<script src="app.js"></script>
+</body>
+</html>

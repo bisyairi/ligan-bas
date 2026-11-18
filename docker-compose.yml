@@ -1,0 +1,14 @@
+# Local development database:  docker compose up -d
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: ligan_bas
+      POSTGRES_USER: ligan_bas
+      POSTGRES_PASSWORD: ligan_bas
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:
