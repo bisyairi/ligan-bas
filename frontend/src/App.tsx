@@ -22,7 +22,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -71,6 +70,42 @@ function providerLabel(routeKey: string): string {
 }
 
 const isSameOption = (item: Option, value: Option) => item.value === value.value
+
+const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'))
+const MINUTES = ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55']
+
+/** "HH:MM" via two selects, so the control looks the same on every platform (native time inputs don't). */
+function TimeSelect({ id, value, onChange }: { id: string; value: string; onChange: (v: string) => void }) {
+  const [h, m] = value.split(':')
+  return (
+    <div id={id} className="flex gap-1.5">
+      <Select value={h} onValueChange={(nh) => onChange(`${nh}:${m}`)}>
+        <SelectTrigger className="w-full">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {HOURS.map((hh) => (
+            <SelectItem key={hh} value={hh}>
+              {hh}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Select value={m} onValueChange={(nm) => onChange(`${h}:${nm}`)}>
+        <SelectTrigger className="w-full">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {MINUTES.map((mm) => (
+            <SelectItem key={mm} value={mm}>
+              {mm}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  )
+}
 
 interface MineSub {
   id: string
@@ -566,13 +601,13 @@ export default function App() {
               <Label htmlFor="start" className="mb-1">
                 {t('fromLabel')}
               </Label>
-              <Input id="start" type="time" value={start} onChange={(e) => setStart(e.target.value)} />
+              <TimeSelect id="start" value={start} onChange={setStart} />
             </div>
             <div className="flex-1">
               <Label htmlFor="end" className="mb-1">
                 {t('toLabel')}
               </Label>
-              <Input id="end" type="time" value={end} onChange={(e) => setEnd(e.target.value)} />
+              <TimeSelect id="end" value={end} onChange={setEnd} />
             </div>
           </div>
 
