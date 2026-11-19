@@ -566,13 +566,25 @@ export default function App() {
               <Label htmlFor="start" className="mb-1">
                 {t('fromLabel')}
               </Label>
-              <Input id="start" type="time" value={start} onChange={(e) => setStart(e.target.value)} />
+              <Input
+                id="start"
+                type="time"
+                className="h-10 py-1.5"
+                value={start}
+                onChange={(e) => setStart(e.target.value)}
+              />
             </div>
             <div className="flex-1">
               <Label htmlFor="end" className="mb-1">
                 {t('toLabel')}
               </Label>
-              <Input id="end" type="time" value={end} onChange={(e) => setEnd(e.target.value)} />
+              <Input
+                id="end"
+                type="time"
+                className="h-10 py-1.5"
+                value={end}
+                onChange={(e) => setEnd(e.target.value)}
+              />
             </div>
           </div>
 
