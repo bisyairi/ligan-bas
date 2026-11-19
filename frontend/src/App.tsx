@@ -659,7 +659,32 @@ export default function App() {
         </Card>
       )}
 
-      <footer className="mt-6 text-xs text-muted-foreground">{t('footer')}</footer>
+      <Dialog>
+        <DialogTrigger asChild>
+          <button className="mt-4 text-sm text-muted-foreground underline underline-offset-2">{t('faqLink')}</button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('faqTitle')}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 text-sm">
+            <div>
+              <p className="font-medium">{t('faqIosQ')}</p>
+              <p className="text-muted-foreground">{t('faqIosA')}</p>
+            </div>
+            <div>
+              <p className="font-medium">{t('faqTimeQ')}</p>
+              <p className="text-muted-foreground">{t('faqTimeA')}</p>
+            </div>
+            <div>
+              <p className="font-medium">{t('faqMultiQ')}</p>
+              <p className="text-muted-foreground">{t('faqMultiA')}</p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <footer className="mt-2 text-xs text-muted-foreground">{t('footer')}</footer>
     </main>
   )
 }

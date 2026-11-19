@@ -73,6 +73,26 @@ const STRINGS = {
   every: { ms: 'setiap', en: 'every' },
   min: { ms: 'min', en: 'min' },
   delete: { ms: 'Padam', en: 'Delete' },
+  faqLink: { ms: 'Soalan lazim (FAQ)', en: 'Frequently asked questions (FAQ)' },
+  faqTitle: { ms: 'Soalan lazim', en: 'FAQ' },
+  faqIosQ: {
+    ms: 'Kat iPhone, butang notifikasi kata browser tak support?',
+    en: "On iPhone, the notification button says the browser isn't supported?",
+  },
+  faqIosA: {
+    ms: "iOS cuma benarkan notifikasi untuk app yang di-\"install\" (iOS 16.4+), bukan tab browser biasa — dan kena guna Safari (Chrome/Brave iPhone pun tak boleh, walaupun sama engine). Buka web ni dalam Safari → tap ikon Share → \"Add to Home Screen\" → buka app dari icon kat Home Screen tu (bukan dari Safari) → baru boleh aktifkan notifikasi.",
+    en: 'iOS only allows notifications for an "installed" app (iOS 16.4+), not a regular browser tab — and it must be Safari (Chrome/Brave on iPhone can\'t either, even though same engine). Open this site in Safari → tap Share → "Add to Home Screen" → open the app from that Home Screen icon (not from Safari) → then enable notifications.',
+  },
+  faqTimeQ: { ms: 'Kenapa masa "Hingga" tak boleh sebelum/sama dengan "Dari"?', en: 'Why can\'t "To" be before/equal to "From"?' },
+  faqTimeA: {
+    ms: 'Jadual ni satu tetingkap berterusan (cth: waktu kerja pagi), bukan alarm berulang — maksimum 4 jam, dalam hari yang sama. Kalau perlukan dua slot (pagi & petang), buat dua subscription berasingan.',
+    en: 'A schedule is one continuous window (e.g. your morning commute), not a repeating alarm — max 4 hours, same day. For two slots (morning & evening), make two separate subscriptions.',
+  },
+  faqMultiQ: { ms: 'Boleh buat lebih dari satu notifikasi?', en: 'Can I set up more than one notification?' },
+  faqMultiA: {
+    ms: 'Boleh — buat subscription untuk setiap route/stop yang kau nak track, semuanya akan dihantar berasingan (tak gantikan satu sama lain). Semua senarai kat bawah bawah "Subscription aku".',
+    en: 'Yes — create a subscription for each route/stop you want to track; each sends its own notification (they don\'t replace each other). They all show up under "My subscriptions" below.',
+  },
   footer: {
     ms: 'ETA dikira dari posisi GPS bas (data.gov.my GTFS Realtime) dan kelajuan purata, jadi ia anggaran, bukan ETA rasmi. Data live dikemas kini setiap ~30 saat. Tiada akaun atau data peribadi disimpan.',
     en: 'ETA is estimated from bus GPS position (data.gov.my GTFS Realtime) and average speed, so it’s an estimate, not an official ETA. Live data refreshes every ~30s. No account or personal data is stored.',
