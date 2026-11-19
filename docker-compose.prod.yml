@@ -1,0 +1,29 @@
+# VPS deploy: docker compose -f docker-compose.prod.yml up -d --build
+# Needs .env.production next to this file (not committed) and the shared "app" network
+# that Caddy is already attached to.
+services:
+  api:
+    build: .
+    restart: unless-stopped
+    env_file: .env.production
+    depends_on: [db]
+    volumes:
+      - data:/app/data
+    networks: [app, internal]
+
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    env_file: .env.production
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks: [internal]
+
+networks:
+  app:
+    external: true
+  internal:
+
+volumes:
+  pgdata:
+  data:

@@ -51,55 +51,61 @@ The first start downloads the static GTFS (can take a minute). `/api/health` sho
 
 ## Deploy on a VPS
 
+Runs as a Docker container (`Dockerfile` builds the frontend + jar in one multi-stage build) alongside a
+Postgres container, both on an `app` Docker network that a shared Caddy container (handling HTTPS + other
+projects on the same box) is already attached to.
+
 ```bash
-cd frontend && npm install && npm run build && cd ..   # must run before package — static/ isn't committed
-mvn -DskipTests package
-scp target/ligan-bas-0.1.0.jar you@vps:/opt/busalert/
+# once, on the VPS
+mkdir -p ~/projects/ligan-bas && cd ~/projects/ligan-bas
+git clone https://github.com/bisyairi/ligan-bas.git .
+docker network create app   # skip if it already exists (e.g. Caddy already uses it)
 ```
 
-`/etc/systemd/system/busalert.service`
-```ini
-[Unit]
-Description=Bus Alert
-After=network.target
+Create `~/projects/ligan-bas/.env.production` (not committed — holds real secrets):
+```bash
+DB_HOST=db
+DB_PORT=5432
+DB_NAME=ligan_bas
+DB_USER=ligan_bas
+DB_PASSWORD=change-me-strong
+POSTGRES_DB=ligan_bas
+POSTGRES_USER=ligan_bas
+POSTGRES_PASSWORD=change-me-strong
+VAPID_SUBJECT=mailto:you@yourdomain.com
+PORT=8080
+```
+(`DB_PASSWORD` and `POSTGRES_PASSWORD` must match — one is read by the app, the other by the Postgres image.)
 
-[Service]
-User=busalert
-WorkingDirectory=/opt/busalert
-Environment=DATA_DIR=/opt/busalert/data
-Environment=VAPID_SUBJECT=mailto:you@yourdomain.com
-Environment=PORT=8080
-Environment=DB_HOST=localhost
-Environment=DB_NAME=ligan_bas
-Environment=DB_USER=ligan_bas
-Environment=DB_PASSWORD=change-me
-ExecStart=/usr/bin/java -Xmx384m -jar /opt/busalert/ligan-bas-0.1.0.jar
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
+```bash
+docker compose -f docker-compose.prod.yml up -d --build
 ```
 
-Caddy (automatic HTTPS) `/etc/caddy/Caddyfile`
+Add a site block to the shared Caddyfile (reverse-proxies by container name over the `app` network, not a
+host port — `ligan-bas-api-1` is the default `<project folder>-<service>-1` name, confirm with
+`docker compose ps`):
 ```
 bus.yourdomain.com {
-    reverse_proxy 127.0.0.1:8080
+    reverse_proxy ligan-bas-api-1:8080
 }
 ```
+then reload Caddy (e.g. `docker exec caddy caddy reload --config /etc/caddy/Caddyfile`, or whatever the
+existing Caddy container's reload process is).
 
-PostgreSQL on the VPS (once):
+**Redeploy after a code change:**
 ```bash
-sudo apt install postgresql
-sudo -u postgres psql -c "CREATE USER ligan_bas WITH PASSWORD 'change-me';"
-sudo -u postgres psql -c "CREATE DATABASE ligan_bas OWNER ligan_bas;"
+cd ~/projects/ligan-bas && git pull && docker compose -f docker-compose.prod.yml up -d --build
 ```
+
+**Back up** the `data` named volume (holds `vapid.properties` — losing it invalidates every push subscription)
+and the `pgdata` named volume (the database), e.g. `docker run --rm -v ligan-bas_data:/data -v $PWD:/backup
+alpine tar czf /backup/data-backup.tgz /data`.
+
 Tables are created on first start (`spring.jpa.hibernate.ddl-auto=update`). For a real production setup
-switch to Flyway migrations. Back up the database **and** `data/vapid.properties`.
+switch to Flyway migrations.
 
-Keep Spring bound behind the proxy (firewall port 8080 from outside). Client IPs come from `X-Forwarded-For`
-set by Caddy (trusted only from loopback/private addresses), which is what the rate limiter uses.
-
-Memory note: the `rapid-bus-kl` static feed is large. If the VPS is small, give the JVM ~512 MB.
+Memory note: the `rapid-bus-kl` static feed is large. If the VPS is small, give the JVM more than the
+Dockerfile's default `-Xmx384m`.
 
 ## API
 

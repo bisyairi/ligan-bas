@@ -1,0 +1,8 @@
+target/
+data/
+.git/
+.idea/
+frontend/node_modules/
+frontend/dist/
+src/main/resources/static/
+*.log
