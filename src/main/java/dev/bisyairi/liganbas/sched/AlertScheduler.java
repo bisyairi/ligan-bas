@@ -70,7 +70,7 @@ public class AlertScheduler {
                 }
                 PushService.Result res = push.send(s.getEndpoint(), s.getP256dh(), s.getAuth(),
                         route.code() + " · " + dev.bisyairi.liganbas.web.Text.title(network.stopName(s.getRouteKey(), s.getStopId())),
-                        body(list, now), "bus-eta");
+                        body(list, now), "bus-eta-" + s.getId());
                 switch (res) {
                     case OK -> {
                         s.setLastSent(ts);

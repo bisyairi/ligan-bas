@@ -13,7 +13,7 @@ public class Subscription {
     private String id;
     @Column(nullable = false)
     private String token;
-    @Column(nullable = false, unique = true, length = 700)
+    @Column(nullable = false, length = 700)
     private String endpoint;
     @Column(nullable = false, length = 200)
     private String p256dh;

@@ -18,7 +18,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -184,9 +183,6 @@ public class ApiController {
         if (repo.count() >= props.maxSubsTotal() || repo.countByIp(ip) >= props.maxSubsPerIp()) {
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Had subscription dicapai");
         }
-        if (repo.existsByEndpoint(endpoint)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Peranti ni dah ada subscription. Padam yang lama dulu.");
-        }
 
         // Send a welcome push first: proves the subscription works before we store it.
         Route r = network.route(body.route());
@@ -199,12 +195,8 @@ public class ApiController {
 
         String id = token(8), secret = token(24);
         String days = body.days().stream().distinct().sorted().map(String::valueOf).collect(Collectors.joining(","));
-        try {
-            repo.save(new Subscription(id, secret, endpoint, p256dh, auth, body.route(), body.stopId(), days,
-                    start, end, body.intervalMin(), ip));
-        } catch (DataIntegrityViolationException e) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Peranti ni dah ada subscription. Padam yang lama dulu.");
-        }
+        repo.save(new Subscription(id, secret, endpoint, p256dh, auth, body.route(), body.stopId(), days,
+                start, end, body.intervalMin(), ip));
         return Map.of("id", id, "token", secret);
     }
 

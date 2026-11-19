@@ -56,6 +56,10 @@ const STRINGS = {
   everyLabel: { ms: 'Setiap', en: 'Every' },
   enableNotif: { ms: 'Aktifkan notifikasi', en: 'Enable notifications' },
   pickOneDay: { ms: 'Pilih sekurang-kurangnya satu hari.', en: 'Pick at least one day.' },
+  endBeforeStart: {
+    ms: "Masa 'Hingga' mesti lepas masa 'Dari' (maksimum 4 jam, dalam hari yang sama).",
+    en: "'To' time must be after 'From' time (max 4 hours, same day).",
+  },
   preparing: { ms: 'Menyediakan…', en: 'Setting up…' },
   subDone: {
     ms: 'Siap! Kau patut dapat satu notifikasi ujian sekarang.',

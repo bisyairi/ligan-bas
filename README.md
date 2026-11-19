@@ -121,6 +121,25 @@ Dockerfile's default `-Xmx384m`.
 | POST | `/api/subscriptions` | body: `subscription, route, stop_id, days[0=Mon..6], start, end, interval_min(1/2/5/10)` → `{id, token}` |
 | DELETE | `/api/subscriptions/{id}?token=…` | unsubscribe |
 
+## FAQ
+
+**Notification button says "Browser ni tak support Web Push" on iPhone, even in Safari?**
+iOS only exposes the Web Push API to an **installed** PWA (iOS 16.4+), not to a page open in a regular
+browser tab. Even third-party browsers on iOS (Chrome, Brave, …) run on Apple's WebKit and are *still*
+restricted the same way — only Safari's "Add to Home Screen" produces an installable app with push rights.
+Steps: open the site in **Safari** → tap **Share** → **Add to Home Screen** → open the app from that new
+Home Screen icon (not from a Safari tab) → then enable notifications.
+
+**Why can't the "To" time be before/equal to the "From" time?**
+A schedule window is "I'm commuting from X to Y", not a recurring daily alarm — it has to be a single
+contiguous block, capped at 4 hours, so `end` must be strictly after `start` within the same day. For an
+overnight or split schedule, create two separate subscriptions.
+
+**Can I only have one alert active, or can I track multiple routes/stops?**
+You can create as many subscriptions as you like on the same device/browser (up to the per-IP cap) — each
+one is independent, with its own route, stop, days, time window and interval, and its own notification (they
+won't replace each other). They show up under "Subscription aku" with their own delete button.
+
 ## Known limitations / ideas
 
 * Estimates only (see above). LRT/MRT timetable support could be added from the `rapid-rail-kl` static feed.

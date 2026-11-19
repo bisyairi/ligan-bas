@@ -291,6 +291,10 @@ export default function App() {
       setSubMsg({ text: t('pickOneDay'), cls: 'warn' })
       return
     }
+    if (end <= start) {
+      setSubMsg({ text: t('endBeforeStart'), cls: 'warn' })
+      return
+    }
     setSubBusy(true)
     setSubMsg({ text: t('preparing') })
     try {
